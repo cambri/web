@@ -71,7 +71,7 @@ apache:
         - php
         - rewrite
     vhosts:
-        xjZ44FQnZ5l9:
+        yivniinvinvr:
             servername: puphpet.com
             serveraliases:
                 - www.puphpet.com

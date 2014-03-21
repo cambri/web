@@ -5,7 +5,7 @@ ENV['VAGRANT_DEFAULT_PROVIDER'] = 'rackspace'
 dir = File.dirname(File.expand_path(__FILE__))
 
 configValues = YAML.load_file("#{dir}/puphpet/config.yaml")
-apiValues = YAML.load_file("#{dir}/puphpet/config.yaml")
+apiValues = YAML.load_file("#{dir}/puphpet/config-api.yaml")
 data = configValues['vagrantfile-rackspace']
 
 Vagrant.configure("2") do |config|

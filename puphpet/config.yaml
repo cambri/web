@@ -79,7 +79,7 @@ apache:
             port: '80'
             override:
                 - All
-            custom_fragment: 'Redirect permanent / https://puphpet.com'
+            custom_fragment: 'Redirect permanent / https://puphpet.com/'
             ssl_cert: ''
             ssl_key: ''
             ssl_chain: ''

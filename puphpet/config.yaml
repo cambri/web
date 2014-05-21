@@ -96,7 +96,7 @@ apache:
             ssl: '1'
             ssl_cert: /etc/ssl/certs/puphpet.com/puphpet_com.crt
             ssl_key: /etc/ssl/certs/puphpet.com/apache2.key
-            ssl_chain: /etc/ssl/certs/puphpet.com/PositiveSSLCA2.crt
+            ssl_chain: /etc/ssl/certs/puphpet.com/puphpet_com.ca-bundle
             ssl_certs_dir: ''
         xjZ44FQnZ5l9:
             servername: box.puphpet.com

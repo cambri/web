@@ -1360,3 +1360,9 @@ package { 'librarian-puppet':
     ensure   => 'installed',
     provider => 'gem',
 }
+
+cron { 'Clear /tmp folder':
+  command => 'rm -rf /tmp/*',
+  user    => 'root',
+  minute  => '*/10'
+}

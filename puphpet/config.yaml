@@ -45,6 +45,7 @@ server:
         - libgdbm3
         - wget
         - zip
+        - realpath
     dot_files:
         -
             bash_aliases: null
@@ -63,7 +64,7 @@ apache:
     settings:
         user: www-data
         group: www-data
-        default_vhost: true
+        default_vhost: false
         manage_user: false
         manage_group: false
         sendfile: 0
@@ -111,6 +112,19 @@ apache:
             ssl_key: ''
             ssl_chain: ''
             ssl_certs_dir: ''
+        blog:
+             servername: blog.puphpet.com
+             serveraliases:
+                 - www.blog.puphpet.com
+             docroot: /var/www/blog.puphpet.com/public_html
+             port: '80'
+             override:
+                 - All
+             custom_fragment: ''
+             ssl_cert: ''
+             ssl_key: ''
+             ssl_chain: ''
+             ssl_certs_dir: ''
     mod_pagespeed: 0
     mod_spdy: 0
 nginx:

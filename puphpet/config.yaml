@@ -46,6 +46,7 @@ server:
         - wget
         - zip
         - realpath
+        - apt-mirror
     dot_files:
         -
             bash_aliases: null
@@ -98,25 +99,25 @@ apache:
             ssl_cert: /etc/ssl/certs/puphpet.com/puphpet_com.crt
             ssl_key: /etc/ssl/certs/puphpet.com/apache2.key
             ssl_chain: /etc/ssl/certs/puphpet.com/puphpet_com.ca-bundle
-            ssl_certs_dir: ''
-        xjZ44FQnZ5l9:
-            servername: box.puphpet.com
-            serveraliases:
-                - www.box.puphpet.com
-            docroot: /var/www/box.puphpet.com/public_html/
-            port: '80'
-            override:
-                - All
-            custom_fragment: ''
-            ssl_cert: ''
-            ssl_key: ''
-            ssl_chain: ''
-            ssl_certs_dir: ''
+            ssl_certs_dir: false
         blog:
              servername: blog.puphpet.com
              serveraliases:
                  - www.blog.puphpet.com
              docroot: /var/www/blog.puphpet.com/public_html
+             port: '80'
+             override:
+                 - All
+             custom_fragment: ''
+             ssl_cert: ''
+             ssl_key: ''
+             ssl_chain: ''
+             ssl_certs_dir: ''
+        repo:
+             servername: repo.puphpet.com
+             serveraliases:
+                 - www.repo.puphpet.com
+             docroot: /var/www/repo.puphpet.com/
              port: '80'
              override:
                  - All

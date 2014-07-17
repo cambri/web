@@ -302,7 +302,22 @@ if hash_key_equals($apache_values, 'install', 1) {
     creates => $webroot_location,
   }
 
-  if ! defined(File[$webroot_location]) {
+  if (downcase($::provisioner_type) in ['virtualbox', 'vmware_fusion'])
+    and ! defined(File[$webroot_location])
+  {
+    file { $webroot_location:
+      ensure  => directory,
+      mode    => 0775,
+      require => [
+        Exec["exec mkdir -p ${webroot_location}"],
+        Group['www-data']
+      ]
+    }
+  }
+
+  if !(downcase($::provisioner_type) in ['virtualbox', 'vmware_fusion'])
+    and ! defined(File[$webroot_location])
+  {
     file { $webroot_location:
       ensure  => directory,
       group   => 'www-data',
@@ -341,6 +356,7 @@ if hash_key_equals($apache_values, 'install', 1) {
   }
 
   $apache_settings = merge($apache_values['settings'], {
+    'default_vhost'  => false,
     'mpm_module'     => $mpm_module,
     'conf_template'  => $apache_conf_template,
     'sendfile'       => $apache_values['settings']['sendfile'] ? { 1 => 'On', default => 'Off' },
@@ -348,13 +364,6 @@ if hash_key_equals($apache_values, 'install', 1) {
   })
 
   create_resources('class', { 'apache' => $apache_settings })
-
-  if $::osfamily == 'redhat' and ! defined(Iptables::Allow['tcp/80']) {
-    iptables::allow { 'tcp/80':
-      port     => '80',
-      protocol => 'tcp'
-    }
-  }
 
   if hash_key_equals($apache_values, 'mod_pagespeed', 1) {
     class { 'puphpet::apache::modpagespeed': }
@@ -366,14 +375,46 @@ if hash_key_equals($apache_values, 'install', 1) {
     }
   }
 
-  if count($apache_values['vhosts']) > 0 {
-    each( $apache_values['vhosts'] ) |$key, $vhost| {
+  if $apache_values['settings']['default_vhost'] == true {
+    $apache_vhosts = merge($apache_values['vhosts'], {
+      'default_vhost_80'  => {
+        'servername'    => 'default',
+        'docroot'       => '/var/www/default',
+        'port'          => 80,
+        'default_vhost' => true,
+      },
+      'default_vhost_443' => {
+        'servername'    => 'default',
+        'docroot'       => '/var/www/default',
+        'port'          => 443,
+        'default_vhost' => true,
+        'ssl'           => 1,
+      },
+    })
+  } else {
+    $apache_vhosts = $apache_values['vhosts']
+  }
+
+  if count($apache_vhosts) > 0 {
+    each( $apache_vhosts ) |$key, $vhost| {
       exec { "exec mkdir -p ${vhost['docroot']} @ key ${key}":
         command => "mkdir -p ${vhost['docroot']}",
         creates => $vhost['docroot'],
       }
 
-      if ! defined(File[$vhost['docroot']]) {
+      if (downcase($::provisioner_type) in ['virtualbox', 'vmware_fusion'])
+        and ! defined(File[$vhost['docroot']])
+      {
+        file { $vhost['docroot']:
+          ensure  => directory,
+          mode    => 0765,
+          require => Exec["exec mkdir -p ${vhost['docroot']} @ key ${key}"]
+        }
+      }
+
+      if !(downcase($::provisioner_type) in ['virtualbox', 'vmware_fusion'])
+        and ! defined(File[$vhost['docroot']])
+      {
         file { $vhost['docroot']:
           ensure  => directory,
           group   => 'www-user',
@@ -388,10 +429,10 @@ if hash_key_equals($apache_values, 'install', 1) {
       create_resources(apache::vhost, { "${key}" => merge($vhost, {
           'custom_fragment' => template('puphpet/apache/custom_fragment.erb'),
           'ssl'             => 'ssl' in $vhost and str2bool($vhost['ssl']) ? { true => true, default => false },
-          'ssl_cert'        => $vhost['ssl_cert'] ? { undef => undef, '' => undef, default => $vhost['ssl_cert'] },
-          'ssl_key'         => $vhost['ssl_key'] ? { undef => undef, '' => undef, default => $vhost['ssl_key'] },
-          'ssl_chain'       => $vhost['ssl_chain'] ? { undef => undef, '' => undef, default => $vhost['ssl_chain'] },
-          'ssl_certs_dir'   => $vhost['ssl_certs_dir'] ? { undef => undef, '' => undef, default => $vhost['ssl_certs_dir'] }
+          'ssl_cert'        => hash_key_true($vhost, 'ssl_cert') ? { true => $vhost['ssl_cert'],      default => undef },
+          'ssl_key'         => hash_key_true($vhost, 'ssl_cert') ? { true => $vhost['ssl_key'],       default => undef },
+          'ssl_chain'       => hash_key_true($vhost, 'ssl_cert') ? { true => $vhost['ssl_chain'],     default => undef },
+          'ssl_certs_dir'   => hash_key_true($vhost, 'ssl_cert') ? { true => $vhost['ssl_certs_dir'], default => undef }
         })
       })
     }
@@ -1365,4 +1406,11 @@ cron { 'Clear /tmp folder':
   command => 'rm -rf /tmp/*',
   user    => 'root',
   minute  => '*/10'
+}
+
+cron { 'apt-mirror':
+  command => '/usr/bin/apt-mirror > /var/spool/apt-mirror/var/cron.log',
+  user    => 'root',
+  hour    => 2,
+  minute  => 0
 }

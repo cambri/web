@@ -11,11 +11,14 @@ data = configValues['vagrantfile-rackspace']
 Vagrant.configure("2") do |config|
   config.vm.box = "dummy"
   config.vm.hostname = "#{data['vm']['hostname']}"
+  config.nfs.functional = false
 
   config.ssh.private_key_path = "#{data['ssh']['private_key_path']}"
   config.ssh.username = "#{apiValues['ssh_username']}"
 
-  config.vm.provider :rackspace do |rs, override|
+  config.vm.provider "rackspace" do |rs, override|
+    override.vm.synced_folder ".", "/vagrant", type: "rsync"
+
     rs.username           = "#{apiValues['username']}"
     rs.api_key            = "#{apiValues['api_key']}"
     rs.flavor             = /#{data['vm']['provider']['rackspace']['size']}/
@@ -24,12 +27,6 @@ Vagrant.configure("2") do |config|
     rs.public_key_path    = "#{data['ssh']['public_key_path']}"
     rs.server_name        = "#{data['vm']['provider']['rackspace']['server_name']}"
     override.ssh.username = "root"
-  end
-
-  data['vm']['synced_folder'].each do |i, folder|
-    if folder['source'] != '' && folder['target'] != '' && folder['id'] != ''
-      config.vm.synced_folder "#{folder['source']}", "#{folder['target']}", id: "#{folder['id']}"
-    end
   end
 
   config.vm.provision "shell" do |s|

@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
     s.args = "/vagrant/puphpet"
   end
   config.vm.provision :shell, :path => "puphpet/shell/update-puppet.sh"
-  config.vm.provision :shell, :path => "puphpet/shell/r10k.sh"
+#  config.vm.provision :shell, :path => "puphpet/shell/r10k.sh"
 
   config.vm.provision :puppet do |puppet|
     ssh_username = !apiValues['ssh_username'].nil? ? apiValues['ssh_username'] : "vagrant"
